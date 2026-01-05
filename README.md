@@ -144,6 +144,22 @@ CLI flags in `run_reports.py` override config values.
 - Latest pointers: `reports/latest_top_markets_24h.csv.gz` and `reports/latest_all_active_markets.csv.gz` always reflect the newest run.
 - Rolling datasets: appended time-series in `reports/rolling/*.csv.gz`.
 
+## Notifications (Optional)
+
+You can receive a Telegram message after runs:
+
+- Local runs: set environment variables before executing:
+
+```bash
+export TELEGRAM_TOKEN="<bot_token>"
+export TELEGRAM_CHAT_ID="<chat_id>"
+python run_reports.py
+```
+
+- GitHub Actions: add `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID` as repository Secrets (Settings → Secrets and variables → Actions). The weekly workflow will send a summary message if both are set.
+
+Security note: never commit tokens to the repo. If a token is exposed, rotate it (create a new bot token) and remove the old one.
+
 ## Analysis Notebook
 
 - See `notebooks/analysis.ipynb` for quick charts and summaries based on the latest and rolling CSVs.

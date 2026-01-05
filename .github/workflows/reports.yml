@@ -9,6 +9,9 @@ on:
 jobs:
   generate-reports:
     runs-on: ubuntu-latest
+    env:
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,3 +44,17 @@ jobs:
           name: polymarket-reports-${{ github.run_id }}
           path: reports/*.csv
           if-no-files-found: warn
+
+      - name: Notify Telegram
+        if: ${{ env.TELEGRAM_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
+        run: |
+          python - <<'PY'
+          import os, glob, requests
+          token = os.environ.get('TELEGRAM_TOKEN')
+          chat = os.environ.get('TELEGRAM_CHAT_ID')
+          repo = os.environ.get('GITHUB_REPOSITORY')
+          run_id = os.environ.get('GITHUB_RUN_ID')
+          files = glob.glob('reports/**/*.csv*', recursive=True)
+          msg = f"Polymarket weekly reports completed. Files: {len(files)}. Repo: https://github.com/{repo}. Run ID: {run_id}."
+          requests.post(f"https://api.telegram.org/bot{token}/sendMessage", data={'chat_id': chat, 'text': msg}, timeout=10)
+          PY

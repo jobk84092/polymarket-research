@@ -3,6 +3,7 @@ import importlib.util
 import os
 import json
 from datetime import datetime, timezone
+import requests
 
 # We directly import the modules by filename to avoid path issues with spaces
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -42,6 +43,8 @@ def main():
     run_top = args.top50 or (not args.top50 and not args.all_active)
     run_all = args.all_active or (not args.top50 and not args.all_active)
 
+    saved_paths = []
+
     if run_top:
         mod_top = load_module(top50_path)
         try:
@@ -49,6 +52,7 @@ def main():
             df = mod_top.build_df(data)
             path = mod_top.save_csv(df, out_dir=outdir, prefix="top_markets_24h")
             print(f"Saved: {path}")
+            saved_paths.append(path)
         except Exception as e:
             print(f"Error running top_markets_24h: {e}")
 
@@ -59,11 +63,34 @@ def main():
             df = mod_all.build_df(data)
             path = mod_all.save_csv(df, out_dir=outdir, prefix="all_active_markets")
             print(f"Saved: {path}")
+            saved_paths.append(path)
         except Exception as e:
             print(f"Error running all_active_markets: {e}")
 
     print("Done.")
 
+    # Optional Telegram notification via env vars
+    notify_telegram(saved_paths)
+
 
 if __name__ == "__main__":
     main()
+
+
+def notify_telegram(paths):
+    token = os.environ.get("TELEGRAM_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return False
+    try:
+        text = "Polymarket reports generated:\n" + "\n".join(f"- {p}" for p in paths)
+        requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data={"chat_id": chat_id, "text": text},
+            timeout=10,
+        )
+        print("Telegram notification sent.")
+        return True
+    except Exception as e:
+        print(f"Telegram notify failed: {e}")
+        return False
