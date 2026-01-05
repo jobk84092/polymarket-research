@@ -8,6 +8,8 @@ on:
 jobs:
   alerts:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
