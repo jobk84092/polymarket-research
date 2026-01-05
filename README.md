@@ -144,6 +144,17 @@ CLI flags in `run_reports.py` override config values.
 - Latest pointers: `reports/latest_top_markets_24h.csv.gz` and `reports/latest_all_active_markets.csv.gz` always reflect the newest run.
 - Rolling datasets: appended time-series in `reports/rolling/*.csv.gz`.
 
+## Analysis Notebook
+
+- See `notebooks/analysis.ipynb` for quick charts and summaries based on the latest and rolling CSVs.
+- Install plotting deps:
+
+```bash
+pip install -r requirements.txt
+```
+
+- Open the notebook in VS Code or Jupyter and run all cells.
+
 ## Notes
 
 - These scripts call Polymarket's public Gamma API and save full JSON fields like `outcomes` and `outcomePrices` into CSVs.
