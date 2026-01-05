@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# VS Code
+.vscode/
+
+# Conda
+.conda/
+conda-meta/
+
+# Reports output (keep folder, ignore files)
+reports/*.csv
+reports/*.log
