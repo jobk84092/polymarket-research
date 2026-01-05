@@ -24,3 +24,4 @@ conda-meta/
 # Reports output (keep folder, ignore files)
 reports/*.csv
 reports/*.log
+.env

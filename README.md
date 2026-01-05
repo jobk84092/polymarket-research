@@ -154,6 +154,24 @@ You can receive a Telegram message after runs:
 export TELEGRAM_TOKEN="<bot_token>"
 export TELEGRAM_CHAT_ID="<chat_id>"
 python run_reports.py
+- Alerts script (`polymarket_alerts.py`):
+
+Configure once via a local `.env` (ignored by git):
+
+```
+TELEGRAM_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id
+```
+
+Run with CLI flags:
+
+```bash
+python polymarket_alerts.py --poll-seconds 60 --top-n 50 --jump-points 0.08 --notify --cooldown-seconds 300
+```
+
+Notes:
+- `--notify` controls whether Telegram messages are sent.
+- The script logs a heartbeat each cycle and applies a cooldown per market to reduce noise.
 ```
 
 - GitHub Actions: add `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID` as repository Secrets (Settings → Secrets and variables → Actions). The weekly workflow will send a summary message if both are set.
