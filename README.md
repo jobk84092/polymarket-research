@@ -10,6 +10,13 @@ It's best to use a Python virtual environment to avoid Conda/Homebrew conflicts:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+Optional developer tooling (formatting/lint):
+
+```bash
+pip install pre-commit black ruff
+pre-commit install
+```
+
 ```
 
 ## On-Demand Usage
@@ -116,6 +123,26 @@ Trigger manually:
 ```
 
 Artifacts can be downloaded from the workflow run page.
+
+## Configuration
+
+- `config.json` controls defaults like `limit` and `outdir`:
+
+```json
+{
+	"limit": 50,
+	"outdir": "reports"
+}
+```
+
+CLI flags in `run_reports.py` override config values.
+
+## Outputs
+
+- Partitioned by date: CSVs are saved under `reports/YYYY-MM-DD/`.
+- Compressed: files are written as `.csv.gz` to save space.
+- Latest pointers: `reports/latest_top_markets_24h.csv.gz` and `reports/latest_all_active_markets.csv.gz` always reflect the newest run.
+- Rolling datasets: appended time-series in `reports/rolling/*.csv.gz`.
 
 ## Notes
 

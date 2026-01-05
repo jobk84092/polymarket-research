@@ -1,6 +1,7 @@
 import argparse
 import importlib.util
 import os
+import json
 from datetime import datetime, timezone
 
 # We directly import the modules by filename to avoid path issues with spaces
@@ -18,11 +19,21 @@ def main():
     parser = argparse.ArgumentParser(description="Run Polymarket reports and save CSVs.")
     parser.add_argument("--top50", action="store_true", help="Run only the Top 50 by 24h volume report")
     parser.add_argument("--all-active", action="store_true", help="Run only the All Active Markets snapshot")
-    parser.add_argument("--outdir", default="reports", help="Output folder (default: reports)")
-    parser.add_argument("--limit", type=int, default=50, help="Limit for markets (default: 50)")
+    parser.add_argument("--outdir", default=None, help="Output folder (overrides config)")
+    parser.add_argument("--limit", type=int, default=None, help="Limit for markets (overrides config)")
     args = parser.parse_args()
 
-    outdir = os.path.join(BASE_DIR, args.outdir)
+    # Load config and apply CLI overrides
+    cfg_path = os.path.join(BASE_DIR, "config.json")
+    cfg = {}
+    if os.path.exists(cfg_path):
+        try:
+            with open(cfg_path, "r") as f:
+                cfg = json.load(f)
+        except Exception:
+            cfg = {}
+    outdir = os.path.join(BASE_DIR, args.outdir or cfg.get("outdir", "reports"))
+    limit = int(args.limit or cfg.get("limit", 50))
     os.makedirs(outdir, exist_ok=True)
 
     top50_path = os.path.join(BASE_DIR, "top 50 polymarket.py")
@@ -33,17 +44,23 @@ def main():
 
     if run_top:
         mod_top = load_module(top50_path)
-        data = mod_top.top_markets_by_24h(limit=args.limit)
-        df = mod_top.build_df(data)
-        path = mod_top.save_csv(df, out_dir=outdir, prefix="top_markets_24h")
-        print(f"Saved: {path}")
+        try:
+            data = mod_top.top_markets_by_24h(limit=limit)
+            df = mod_top.build_df(data)
+            path = mod_top.save_csv(df, out_dir=outdir, prefix="top_markets_24h")
+            print(f"Saved: {path}")
+        except Exception as e:
+            print(f"Error running top_markets_24h: {e}")
 
     if run_all:
         mod_all = load_module(all_active_path)
-        data = mod_all.fetch_markets(limit=args.limit, active=True)
-        df = mod_all.build_df(data)
-        path = mod_all.save_csv(df, out_dir=outdir, prefix="all_active_markets")
-        print(f"Saved: {path}")
+        try:
+            data = mod_all.fetch_markets(limit=limit, active=True)
+            df = mod_all.build_df(data)
+            path = mod_all.save_csv(df, out_dir=outdir, prefix="all_active_markets")
+            print(f"Saved: {path}")
+        except Exception as e:
+            print(f"Error running all_active_markets: {e}")
 
     print("Done.")
 
