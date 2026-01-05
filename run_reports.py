@@ -16,6 +16,25 @@ def load_module(module_path):
     return module
 
 
+def notify_telegram(paths):
+    token = os.environ.get("TELEGRAM_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return False
+    try:
+        text = "Polymarket reports generated:\n" + "\n".join(f"- {p}" for p in paths)
+        requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data={"chat_id": chat_id, "text": text},
+            timeout=10,
+        )
+        print("Telegram notification sent.")
+        return True
+    except Exception as e:
+        print(f"Telegram notify failed: {e}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run Polymarket reports and save CSVs.")
     parser.add_argument("--top50", action="store_true", help="Run only the Top 50 by 24h volume report")
@@ -75,22 +94,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-def notify_telegram(paths):
-    token = os.environ.get("TELEGRAM_TOKEN")
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
-    if not token or not chat_id:
-        return False
-    try:
-        text = "Polymarket reports generated:\n" + "\n".join(f"- {p}" for p in paths)
-        requests.post(
-            f"https://api.telegram.org/bot{token}/sendMessage",
-            data={"chat_id": chat_id, "text": text},
-            timeout=10,
-        )
-        print("Telegram notification sent.")
-        return True
-    except Exception as e:
-        print(f"Telegram notify failed: {e}")
-        return False
