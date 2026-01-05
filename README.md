@@ -105,6 +105,18 @@ crontab -e
 
 - launchd (more mac-native). If you want, I can add a sample plist file.
 
+## GitHub Actions (Weekly)
+
+This repository includes a workflow at `.github/workflows/reports.yml` that runs once a week (Monday 00:00 UTC) and uploads the generated CSVs as build artifacts.
+
+Trigger manually:
+
+```bash
+# From GitHub UI: Actions tab → Polymarket Reports Weekly → Run workflow
+```
+
+Artifacts can be downloaded from the workflow run page.
+
 ## Notes
 
 - These scripts call Polymarket's public Gamma API and save full JSON fields like `outcomes` and `outcomePrices` into CSVs.
