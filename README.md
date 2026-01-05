@@ -124,6 +124,22 @@ Trigger manually:
 
 Artifacts can be downloaded from the workflow run page.
 
+## Always-On (CI Alerts)
+
+To keep alerts running even when your Mac is off, this repo includes a CI workflow that runs every 10 minutes and sends Telegram notifications if Secrets are set:
+
+- Workflow: `.github/workflows/alerts.yml`
+- Schedule: every 10 minutes (and manual trigger via Actions tab)
+- Persists `pm_state.json` by committing it back to the repo after each run
+
+Configure Secrets:
+
+1. In GitHub → Repository → Settings → Secrets and variables → Actions
+2. Add `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID`
+3. The workflow will start sending alerts automatically
+
+Note: CI runs are periodic (not continuous). For near real-time, consider deploying `polymarket_alerts.py` on a small cloud worker (e.g., Fly.io, Render, Railway) with env vars set.
+
 ## Configuration
 
 - `config.json` controls defaults like `limit` and `outdir`:

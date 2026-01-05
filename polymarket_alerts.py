@@ -66,7 +66,7 @@ def save_state(state):
         json.dump(state, f)
     os.replace(tmp, STATE_FILE)
 
-def run(poll_seconds=60, top_n=50, jump_points=0.08, notify=True, cooldown_seconds=300):
+def run(poll_seconds=60, top_n=50, jump_points=0.08, notify=True, cooldown_seconds=300, once=False):
     """
     poll_seconds: how often to check
     jump_points: 0.08 = 8 percentage points (since prices are 0..1)
@@ -130,6 +130,8 @@ def run(poll_seconds=60, top_n=50, jump_points=0.08, notify=True, cooldown_secon
         save_state(state)
         elapsed = time.time() - cycle_start
         print(f"Heartbeat: processed={processed}, alerts={alerts}, elapsed={elapsed:.2f}s")
+        if once:
+            break
         sleep_for = poll_seconds + random.uniform(0, 2)
         time.sleep(sleep_for)
 
@@ -140,6 +142,7 @@ def parse_args():
     p.add_argument("--jump-points", type=float, default=0.08, help="Minimum absolute change in YES price (0..1)")
     p.add_argument("--notify", action="store_true", help="Enable Telegram notifications")
     p.add_argument("--cooldown-seconds", type=int, default=300, help="Cooldown per market between alerts")
+    p.add_argument("--once", action="store_true", help="Run a single cycle (useful for CI)")
     return p.parse_args()
 
 if __name__ == "__main__":
@@ -150,4 +153,5 @@ if __name__ == "__main__":
         jump_points=args.jump_points,
         notify=args.notify,
         cooldown_seconds=args.cooldown_seconds,
+        once=args.once,
     )
