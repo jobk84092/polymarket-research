@@ -68,7 +68,7 @@ def _to_float(x: Optional[object]) -> Optional[float]:
     except Exception:
         return None
 
-def save_csv(df, out_dir="reports", prefix="top_markets_24h", gzip=True, partition_by_date=True, latest=True, rolling=True):
+def save_csv(df, out_dir="reports", prefix="top_markets_24h", gzip=False, partition_by_date=True, latest=True, rolling=True):
     base_out = out_dir
     if partition_by_date:
         date_dir = datetime.now(timezone.utc).strftime("%Y-%m-%d")

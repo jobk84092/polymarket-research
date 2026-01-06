@@ -159,11 +159,73 @@ CLI flags in `run_reports.py` override config values.
 - Compressed: files are written as `.csv.gz` to save space.
 - Latest pointers: `reports/latest_top_markets_24h.csv.gz` and `reports/latest_all_active_markets.csv.gz` always reflect the newest run.
 - Rolling datasets: appended time-series in `reports/rolling/*.csv.gz`.
+### Daily Polymarket Reports
+
+To automatically generate one CSV per day for both all active markets and the top markets of the past 24 hours, use the provided script and a cron (or launchd) schedule.
+
+Setup:
+- Script: [scripts/run_daily_reports.sh](scripts/run_daily_reports.sh)
+- Output: [reports/](reports) with daily partitions (YYYY-MM-DD), plus `latest_*` and `rolling/*` files.
+
+Run once manually:
+```bash
+chmod +x scripts/run_daily_reports.sh
+scripts/run_daily_reports.sh
+```
+
+Quick manual run on-demand:
+```bash
+chmod +x scripts/run_reports_once.sh
+scripts/run_reports_once.sh          # runs both reports into reports/
+scripts/run_reports_once.sh --top50  # only top 24h markets
+scripts/run_reports_once.sh --all-active  # only all active markets
+```
+
+Schedule via cron (macOS/Linux):
+```bash
+crontab -e
+# At 00:15 UTC daily (adjust to your preference)
+15 0 * * * "/Users/jobkimani/Library/CloudStorage/OneDrive-Personal/JOB/personal stuff/learning centre/STATISTTICS/projects for practice/POLYMARKET/scripts/run_daily_reports.sh"
+```
+
+Optional: macOS LaunchAgent (copy into `~/Library/LaunchAgents/com.polymarket.reports.plist`):
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Label</key>
+		<string>com.polymarket.reports</string>
+		<key>ProgramArguments</key>
+		<array>
+			<string>/bin/zsh</string>
+			<string>-lc</string>
+			<string>"/Users/jobkimani/Library/CloudStorage/OneDrive-Personal/JOB/personal stuff/learning centre/STATISTTICS/projects for practice/POLYMARKET/scripts/run_daily_reports.sh"</string>
+		</array>
+		<key>StartCalendarInterval</key>
+		<dict>
+			<key>Hour</key>
+			<integer>0</integer>
+			<key>Minute</key>
+			<integer>15</integer>
+		</dict>
+		<key>StandardOutPath</key>
+		<string>/Users/jobkimani/Library/CloudStorage/OneDrive-Personal/JOB/personal stuff/learning centre/STATISTTICS/projects for practice/POLYMARKET/reports/launchd.out.log</string>
+		<key>StandardErrorPath</key>
+		<string>/Users/jobkimani/Library/CloudStorage/OneDrive-Personal/JOB/personal stuff/learning centre/STATISTTICS/projects for practice/POLYMARKET/reports/launchd.err.log</string>
+	</dict>
+	</plist>
+```
+Load the agent:
+```bash
+launchctl load ~/Library/LaunchAgents/com.polymarket.reports.plist
+```
+
+This will produce exactly one snapshot per day per report (files include timestamps and are partitioned under the date directory).
 
 ## Notifications (Optional)
 
 You can receive a Telegram message after runs:
-
 - Local runs: set environment variables before executing:
 
 ```bash
@@ -171,7 +233,6 @@ export TELEGRAM_TOKEN="<bot_token>"
 export TELEGRAM_CHAT_ID="<chat_id>"
 python run_reports.py
 - Alerts script (`polymarket_alerts.py`):
-
 Configure once via a local `.env` (ignored by git):
 
 ```

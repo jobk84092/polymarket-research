@@ -1,0 +1,38 @@
+Dexter Quick Start
+
+1) Start the CLI
+- Navigate to the project:
+  cd "/Users/jobkimani/Library/CloudStorage/OneDrive-Personal/JOB/personal stuff/learning centre/STATISTTICS/projects for practice/POLYMARKET/dexter-main"
+- Launch with Bun (absolute path if not on PATH):
+  ~/.bun/bin/bun start
+
+2) Inside the CLI
+- Switch model: type /model and choose OpenAI, Anthropic, or Google.
+- Set API keys when prompted; they will be saved to .env.
+- If already set, keys load automatically on startup.
+
+3) Polymarket tool (local reports)
+- Ask questions like:
+  - Load the latest top 24h Polymarket markets and summarize notable moves.
+  - From the latest all active markets file, list the top 10 by liquidity.
+  - Show markets with implied Yes probability above 0.7 in the latest top24h report.
+- The tool reads CSVs from reports/ or polymarket-research/reports/.
+
+4) Troubleshooting
+- Bun not found:
+  - exec /bin/zsh
+  - which bun
+  - If needed, use ~/.bun/bin/bun
+- Missing credentials:
+  - Ensure OPENAI_API_KEY is set in .env, then restart:
+    ~/.bun/bin/bun start
+- Web search optional:
+  - Set TAVILY_API_KEY in .env for search_web tool; otherwise it returns a friendly message.
+
+5) Optional convenience
+- Create a shell alias (in ~/.zshrc) to launch quickly:
+  alias dexter='cd "/Users/jobkimani/Library/CloudStorage/OneDrive-Personal/JOB/personal stuff/learning centre/STATISTTICS/projects for practice/POLYMARKET/dexter-main" && ~/.bun/bin/bun start'
+
+Notes
+- Use ~/.bun/bin/bun for all Bun commands if bun is not on PATH.
+- To change providers later, use /model inside the CLI.
