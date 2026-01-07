@@ -48,8 +48,14 @@ def parse_yes_price(market: dict):
     prices = market.get("outcomePrices") or []
     if not outcomes or not prices or len(outcomes) != len(prices):
         return None
-    mapping = {str(o).strip().lower(): float(p) for o, p in zip(outcomes, prices)}
-    return mapping.get("yes", float(prices[0]))
+    mapping = {}
+    for o, p in zip(outcomes, prices):
+        try:
+            mapping[str(o).strip().lower()] = float(p)
+        except (ValueError, TypeError):
+            # Skip malformed price entries
+            continue
+    return mapping.get("yes", None)
 
 def load_state():
     if os.path.exists(STATE_FILE):
