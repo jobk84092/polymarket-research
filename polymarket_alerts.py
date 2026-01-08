@@ -1,9 +1,14 @@
-import os, time, json, random, argparse
+import os
+import time
+import json
+import random
+import argparse
 from datetime import datetime, timezone
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
 try:
     from dotenv import load_dotenv
 except Exception:
@@ -12,13 +17,20 @@ except Exception:
 GAMMA = "https://gamma-api.polymarket.com"
 STATE_FILE = "pm_state.json"
 
+
 def get_session(retries: int = 3, backoff: float = 0.5):
     s = requests.Session()
-    retry = Retry(total=retries, backoff_factor=backoff, status_forcelist=(429, 500, 502, 503, 504), allowed_methods=("GET", "POST"))
+    retry = Retry(
+        total=retries,
+        backoff_factor=backoff,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=("GET", "POST"),
+    )
     adapter = HTTPAdapter(max_retries=retry)
     s.mount("https://", adapter)
     s.mount("http://", adapter)
     return s
+
 
 def tg_send(text: str, token: str, chat_id: str, notify: bool) -> None:
     if not notify:
@@ -32,6 +44,7 @@ def tg_send(text: str, token: str, chat_id: str, notify: bool) -> None:
     except Exception as e:
         print("Telegram send failed:", e)
 
+
 def fetch_top_markets(session, limit=50):
     params = {
         "limit": int(limit),
@@ -43,41 +56,46 @@ def fetch_top_markets(session, limit=50):
     r.raise_for_status()
     return r.json()
 
+
 def parse_yes_price(market: dict):
     outcomes = market.get("outcomes") or []
     prices = market.get("outcomePrices") or []
-    
+
     # Handle stringified JSON in prices field
     if isinstance(prices, str):
         try:
             prices = json.loads(prices)
         except (json.JSONDecodeError, ValueError) as e:
-            print(f"⚠️ Failed to parse prices as JSON for market {market.get('slug', 'unknown')}: {e}")
+            print(
+                f"⚠️ Failed to parse prices as JSON for market {market.get('slug', 'unknown')}: {e}"
+            )
             return None
-    
+
     # Validate basic structure
     if not outcomes or not prices or len(outcomes) != len(prices):
         return None
-    
+
     # Build mapping with type validation for each price
     try:
         mapping = {}
         for o, p in zip(outcomes, prices):
             # Handle stringified prices within the array (only if looks like JSON)
-            if isinstance(p, str) and (p.startswith('[') or p.startswith('{')):
+            if isinstance(p, str) and (p.startswith("[") or p.startswith("{")):
                 try:
                     p = json.loads(p)
                 except (json.JSONDecodeError, ValueError):
                     pass
-            
+
             # Convert to float with validation
             try:
                 price_float = float(p)
                 mapping[str(o).strip().lower()] = price_float
             except (ValueError, TypeError) as e:
-                print(f"⚠️ Invalid price value '{p}' for outcome '{o}' in market {market.get('slug', 'unknown')}: {e}")
+                print(
+                    f"⚠️ Invalid price value '{p}' for outcome '{o}' in market {market.get('slug', 'unknown')}: {e}"
+                )
                 return None
-        
+
         # Return YES price if exists, otherwise first valid price from mapping
         yes_price = mapping.get("yes")
         if yes_price is not None:
@@ -85,8 +103,11 @@ def parse_yes_price(market: dict):
         # Fallback to first price if no "yes" outcome
         return list(mapping.values())[0] if mapping else None
     except Exception as e:
-        print(f"⚠️ Unexpected error parsing prices for market {market.get('slug', 'unknown')}: {e}")
+        print(
+            f"⚠️ Unexpected error parsing prices for market {market.get('slug', 'unknown')}: {e}"
+        )
         return None
+
 
 def load_state():
     if os.path.exists(STATE_FILE):
@@ -97,13 +118,22 @@ def load_state():
             return {}
     return {}
 
+
 def save_state(state):
     tmp = STATE_FILE + ".tmp"
     with open(tmp, "w") as f:
         json.dump(state, f)
     os.replace(tmp, STATE_FILE)
 
-def run(poll_seconds=60, top_n=50, jump_points=0.08, notify=True, cooldown_seconds=300, once=False):
+
+def run(
+    poll_seconds=60,
+    top_n=50,
+    jump_points=0.08,
+    notify=True,
+    cooldown_seconds=300,
+    once=False,
+):
     """
     poll_seconds: how often to check
     jump_points: 0.08 = 8 percentage points (since prices are 0..1)
@@ -166,21 +196,41 @@ def run(poll_seconds=60, top_n=50, jump_points=0.08, notify=True, cooldown_secon
 
         save_state(state)
         elapsed = time.time() - cycle_start
-        print(f"Heartbeat: processed={processed}, alerts={alerts}, elapsed={elapsed:.2f}s")
+        print(
+            f"Heartbeat: processed={processed}, alerts={alerts}, elapsed={elapsed:.2f}s"
+        )
         if once:
             break
         sleep_for = poll_seconds + random.uniform(0, 2)
         time.sleep(sleep_for)
 
+
 def parse_args():
     p = argparse.ArgumentParser(description="Polymarket alerts for YES price moves")
-    p.add_argument("--poll-seconds", type=int, default=60, help="Polling interval seconds")
+    p.add_argument(
+        "--poll-seconds", type=int, default=60, help="Polling interval seconds"
+    )
     p.add_argument("--top-n", type=int, default=50, help="Number of markets to check")
-    p.add_argument("--jump-points", type=float, default=0.08, help="Minimum absolute change in YES price (0..1)")
-    p.add_argument("--notify", action="store_true", help="Enable Telegram notifications")
-    p.add_argument("--cooldown-seconds", type=int, default=300, help="Cooldown per market between alerts")
-    p.add_argument("--once", action="store_true", help="Run a single cycle (useful for CI)")
+    p.add_argument(
+        "--jump-points",
+        type=float,
+        default=0.08,
+        help="Minimum absolute change in YES price (0..1)",
+    )
+    p.add_argument(
+        "--notify", action="store_true", help="Enable Telegram notifications"
+    )
+    p.add_argument(
+        "--cooldown-seconds",
+        type=int,
+        default=300,
+        help="Cooldown per market between alerts",
+    )
+    p.add_argument(
+        "--once", action="store_true", help="Run a single cycle (useful for CI)"
+    )
     return p.parse_args()
+
 
 if __name__ == "__main__":
     args = parse_args()
