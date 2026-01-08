@@ -63,12 +63,11 @@ def parse_yes_price(market: dict):
     try:
         mapping = {}
         for o, p in zip(outcomes, prices):
-            # Handle stringified prices within the array
-            if isinstance(p, str):
+            # Handle stringified prices within the array (only if looks like JSON)
+            if isinstance(p, str) and (p.startswith('[') or p.startswith('{')):
                 try:
                     p = json.loads(p)
                 except (json.JSONDecodeError, ValueError):
-                    # Try direct float conversion
                     pass
             
             # Convert to float with validation
@@ -79,8 +78,12 @@ def parse_yes_price(market: dict):
                 print(f"⚠️ Invalid price value '{p}' for outcome '{o}' in market {market.get('slug', 'unknown')}: {e}")
                 return None
         
-        # Return YES price or first price as fallback
-        return mapping.get("yes", float(prices[0]) if prices else None)
+        # Return YES price if exists, otherwise first valid price from mapping
+        yes_price = mapping.get("yes")
+        if yes_price is not None:
+            return yes_price
+        # Fallback to first price if no "yes" outcome
+        return list(mapping.values())[0] if mapping else None
     except Exception as e:
         print(f"⚠️ Unexpected error parsing prices for market {market.get('slug', 'unknown')}: {e}")
         return None
