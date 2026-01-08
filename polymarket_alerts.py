@@ -46,10 +46,44 @@ def fetch_top_markets(session, limit=50):
 def parse_yes_price(market: dict):
     outcomes = market.get("outcomes") or []
     prices = market.get("outcomePrices") or []
+    
+    # Handle stringified JSON in prices field
+    if isinstance(prices, str):
+        try:
+            prices = json.loads(prices)
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"⚠️ Failed to parse prices as JSON for market {market.get('slug', 'unknown')}: {e}")
+            return None
+    
+    # Validate basic structure
     if not outcomes or not prices or len(outcomes) != len(prices):
         return None
-    mapping = {str(o).strip().lower(): float(p) for o, p in zip(outcomes, prices)}
-    return mapping.get("yes", float(prices[0]))
+    
+    # Build mapping with type validation for each price
+    try:
+        mapping = {}
+        for o, p in zip(outcomes, prices):
+            # Handle stringified prices within the array
+            if isinstance(p, str):
+                try:
+                    p = json.loads(p)
+                except (json.JSONDecodeError, ValueError):
+                    # Try direct float conversion
+                    pass
+            
+            # Convert to float with validation
+            try:
+                price_float = float(p)
+                mapping[str(o).strip().lower()] = price_float
+            except (ValueError, TypeError) as e:
+                print(f"⚠️ Invalid price value '{p}' for outcome '{o}' in market {market.get('slug', 'unknown')}: {e}")
+                return None
+        
+        # Return YES price or first price as fallback
+        return mapping.get("yes", float(prices[0]) if prices else None)
+    except Exception as e:
+        print(f"⚠️ Unexpected error parsing prices for market {market.get('slug', 'unknown')}: {e}")
+        return None
 
 def load_state():
     if os.path.exists(STATE_FILE):
