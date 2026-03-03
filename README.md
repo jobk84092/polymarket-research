@@ -36,13 +36,13 @@ It's best to use a Python virtual environment to avoid Conda/Homebrew conflicts:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
+
 Optional developer tooling (formatting/lint):
 
 ```bash
 pip install pre-commit black ruff
 pre-commit install
-```
-
 ```
 
 ## Review the Latest CSV
@@ -282,14 +282,16 @@ This will produce exactly one snapshot per day per report (files include timesta
 ## Notifications (Optional)
 
 You can receive a Telegram message after runs:
+
 - Local runs: set environment variables before executing:
 
 ```bash
 export TELEGRAM_TOKEN="<bot_token>"
 export TELEGRAM_CHAT_ID="<chat_id>"
 python run_reports.py
-- Alerts script (`polymarket_alerts.py`):
-Configure once via a local `.env` (ignored by git):
+```
+
+- Alerts script (`polymarket_alerts.py`): configure once via a local `.env` (ignored by git):
 
 ```
 TELEGRAM_TOKEN=your_bot_token
@@ -305,7 +307,6 @@ python polymarket_alerts.py --poll-seconds 60 --top-n 50 --jump-points 0.08 --no
 Notes:
 - `--notify` controls whether Telegram messages are sent.
 - The script logs a heartbeat each cycle and applies a cooldown per market to reduce noise.
-```
 
 - GitHub Actions: add `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID` as repository Secrets (Settings → Secrets and variables → Actions). The weekly workflow will send a summary message if both are set.
 
