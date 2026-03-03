@@ -11,6 +11,7 @@ Quick map of all key files so you can jump straight to what you need:
 | `Polymarket.py` | Fetches **all active markets** from the Gamma API and saves a CSV snapshot |
 | `top 50 polymarket.py` | Fetches the **top 50 markets by 24 h volume** and saves a CSV snapshot |
 | `run_reports.py` | Orchestrator – runs either or both of the above; accepts CLI flags (`--top50`, `--all-active`, `--outdir`, `--limit`) |
+| `review_latest.py` | **Review tool** – reads the latest CSV snapshots and prints a formatted table + summary; supports `--fetch`, `--export`, `--rows`, `--report` |
 | `polymarket_alerts.py` | Polls for **YES-price moves** and sends Telegram notifications; runs continuously or in single-shot mode (`--once`) |
 | `config.json` | Default settings (`limit`, `outdir`); CLI flags in `run_reports.py` override these |
 | `pm_state.json` | Persisted price state used by `polymarket_alerts.py` to detect moves between cycles |
@@ -43,6 +44,36 @@ pre-commit install
 ```
 
 ```
+
+## Review the Latest CSV
+
+Once reports have been generated, inspect them directly in the terminal:
+
+```bash
+# Show top markets by 24h volume (default, 20 rows)
+python review_latest.py
+
+# Show all active markets
+python review_latest.py --report all
+
+# Show both reports
+python review_latest.py --report both
+
+# Show more rows
+python review_latest.py --rows 50
+
+# Fetch fresh data from the API first, then review
+python review_latest.py --fetch
+
+# Also export a plain (uncompressed) CSV to reports/ for opening in Excel / Google Sheets
+python review_latest.py --export
+```
+
+The script prints a summary header (snapshot time, market count, total 24h volume, total
+liquidity) followed by a formatted table sorted by 24h volume.
+
+- `--export` writes `reports/review_top.csv` or `reports/review_all.csv`
+  (these are gitignored and won't be committed).
 
 ## On-Demand Usage
 
