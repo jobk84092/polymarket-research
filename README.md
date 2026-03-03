@@ -2,6 +2,31 @@
 
 Generate and store Polymarket market snapshots as CSV files in the `reports/` folder.
 
+## Repository Structure
+
+Quick map of all key files so you can jump straight to what you need:
+
+| File / Folder | What it does |
+|---|---|
+| `Polymarket.py` | Fetches **all active markets** from the Gamma API and saves a CSV snapshot |
+| `top 50 polymarket.py` | Fetches the **top 50 markets by 24 h volume** and saves a CSV snapshot |
+| `run_reports.py` | Orchestrator – runs either or both of the above; accepts CLI flags (`--top50`, `--all-active`, `--outdir`, `--limit`) |
+| `polymarket_alerts.py` | Polls for **YES-price moves** and sends Telegram notifications; runs continuously or in single-shot mode (`--once`) |
+| `config.json` | Default settings (`limit`, `outdir`); CLI flags in `run_reports.py` override these |
+| `pm_state.json` | Persisted price state used by `polymarket_alerts.py` to detect moves between cycles |
+| `requirements.txt` | Python dependencies – install with `pip install -r requirements.txt` |
+| `reports/` | Output folder: dated sub-folders (`YYYY-MM-DD/`), `latest_*` symlinks, and `rolling/` time-series files |
+| `notebooks/analysis.ipynb` | Jupyter notebook with quick charts and summaries built on the CSVs in `reports/` |
+| `scripts/run_daily_reports.sh` | Shell script to generate one snapshot per day (use with cron / launchd) |
+| `scripts/run_reports_once.sh` | Shell script for a quick one-off run (same flags as `run_reports.py`) |
+| `.github/workflows/reports.yml` | GitHub Actions workflow – runs weekly and uploads CSVs as artifacts |
+| `.github/workflows/alerts.yml` | GitHub Actions workflow – runs every 10 minutes and sends Telegram alerts |
+| `prompts/` | AI prompt files used for analysis and reporting (Cursor / ChatGPT) |
+| `checks/validation_checklist.md` | Checklist to validate data, SQL, and report outputs |
+| `sql/00_sources.md` | Documents source systems and assumptions for any SQL work |
+| `DATA_LINEAGE.md` | Template for tracking data origins, transformations, and outputs |
+| `AI_RULES.md` | Guardrails and quality standards for AI-assisted work in this repo |
+
 ## Setup
 
 It's best to use a Python virtual environment to avoid Conda/Homebrew conflicts:
