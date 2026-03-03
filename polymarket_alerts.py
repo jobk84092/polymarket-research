@@ -46,9 +46,31 @@ def fetch_top_markets(session, limit=50):
 def parse_yes_price(market: dict):
     outcomes = market.get("outcomes") or []
     prices = market.get("outcomePrices") or []
+
+    if isinstance(outcomes, str):
+        try:
+            outcomes = json.loads(outcomes)
+        except json.JSONDecodeError:
+            return None
+    if isinstance(prices, str):
+        try:
+            prices = json.loads(prices)
+        except json.JSONDecodeError:
+            return None
+
+    if outcomes and all(isinstance(o, list) for o in outcomes):
+        outcomes = [item for sub in outcomes for item in sub]
+    if prices and all(isinstance(p, list) for p in prices):
+        prices = [item for sub in prices for item in sub]
+
     if not outcomes or not prices or len(outcomes) != len(prices):
         return None
-    mapping = {str(o).strip().lower(): float(p) for o, p in zip(outcomes, prices)}
+
+    try:
+        mapping = {str(o).strip().lower(): float(p) for o, p in zip(outcomes, prices)}
+    except (ValueError, TypeError):
+        return None
+
     return mapping.get("yes", float(prices[0]))
 
 def load_state():
