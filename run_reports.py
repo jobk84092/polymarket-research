@@ -92,7 +92,6 @@ def main():
     notify_telegram(saved_paths)
 
 
-<<<<<<< HEAD
 def notify_telegram(paths):
     token = os.environ.get("TELEGRAM_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
@@ -112,7 +111,5 @@ def notify_telegram(paths):
         return False
 
 
-=======
->>>>>>> 9fedca2d565fa7c38dcae6bd5cf65e4c9070bc18
 if __name__ == "__main__":
     main()
